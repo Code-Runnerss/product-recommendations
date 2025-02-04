@@ -1,0 +1,179 @@
+
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'section-related-products.css' | asset_url | stylesheet_tag }}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.4.1/css/swiper.min.css">
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+{% if section.settings.image_shape == 'blob' %}
+  {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+product-recommendations.slider{
+  margin:0 auto;
+  overflow: hidden;
+  width: 100%;
+  display: inline-block;
+}
+product-recommendations .swiper-container {
+  /* padding-bottom: 20px; */
+  overflow: hidden;
+}
+
+product-recommendations .swiper-container.show .swiper-scrollbar {
+  background: #d6d6d6;
+  height: 10px;
+}
+
+product-recommendations .swiper-container-horizontal > .swiper-scrollbar {
+  border-radius: 2px;
+  height: 5px;
+  width: 200px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+product-recommendations .swiper-wrapper img {
+  width: 100%;
+}
+  product-recommendations .swiper-container.show div:empty{
+    display:flex;
+  }
+   product-recommendations .swiper-button-next.swiper-button-disabled,
+  product-recommendations .swiper-button-prev.swiper-button-disabled{
+    opacity: 0;
+  } 
+ product-recommendations .swiper-button-prev,product-recommendations .swiper-container-rtl .swiper-button-next {
+    background-image:unset;
+    left: 48px;
+    right: auto;
+}
+  product-recommendations .swiper-button-next,product-recommendations .swiper-container-rtl .swiper-button-prev {
+    background-image:unset;
+    right: 48px;
+    left: auto;
+}
+  h2.related-products__heading{
+    font-family: 'Akkurat Pro';
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 32px;
+    text-align: left;
+  }
+{%- endstyle -%}
+{% comment %}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <product-recommendations
+    class="related-products custom_featured_collection page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    data-url="{{ routes.product_recommendations_url }}?limit={{ section.settings.products_to_show }}"
+    data-section-id="{{ section.id }}"
+    data-product-id="{{ product.id }}"
+  >
+    {% if recommendations.performed and recommendations.products_count > 0 %}
+      <h2 class="related-products__heading inline-richtext {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+      <div
+        class=" main-product-{{ section.id }}-product-recommendations product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
+        role="list"
+      >
+        {% assign skip_card_product_styles = false %}
+
+        {% for recommendation in recommendations.products %}
+
+          <div class="slider__slide"  id="Slide-{{ section.id }}-{{ forloop.index }}" >
+            {% render 'card-product',
+              card_product: recommendation,
+              media_aspect_ratio: section.settings.image_ratio,
+              image_shape: section.settings.image_shape,
+              show_secondary_image: section.settings.show_secondary_image,
+              show_vendor: section.settings.show_vendor,
+              show_rating: section.settings.show_rating,
+              skip_styles: skip_card_product_styles
+            %}
+        </div>
+
+          {%- assign skip_card_product_styles = true -%}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </product-recommendations>
+  {% if section.settings.image_shape == 'arch' %}
+    {{ 'mask-arch.svg' | inline_asset_content }}
+  {%- endif -%}
+</div>
+{% endcomment %}
+<div class="color-{{ section.settings.color_scheme }} gradient">
+ <product-recommendations class="slider  section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    data-url="{{ routes.product_recommendations_url }}?limit={{ section.settings.products_to_show }}"
+    data-section-id="{{ section.id }}"
+    data-product-id="{{ product.id }}"
+   >
+     {% if recommendations.performed and recommendations.products_count > 0 %}
+      <h2 class="page-width related-products__heading inline-richtext {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+    <div id="swiper-container" class="swiper-container">
+      <div role="list" class="swiper-wrapper product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down">
+            {% assign skip_card_product_styles = false %}
+              {% for recommendation in recommendations.products %}
+              <div class="swiper-slide grid__item">
+              {% render 'card-product',
+                card_product: recommendation,
+                media_aspect_ratio: section.settings.image_ratio,
+                image_shape: section.settings.image_shape,
+                show_secondary_image: section.settings.show_secondary_image,
+                show_description: section.settings.show_card_description,
+                show_vendor: section.settings.show_vendor,
+                show_rating: section.settings.show_rating,
+                skip_styles: skip_card_product_styles
+              %}
+              {%- assign skip_card_product_styles = true -%}
+            </div>
+          {% endfor %}
+        </div>
+
+    <!-- pagination -->
+      <div class="swiper-pagination"></div>
+  
+      <!-- scrollbar -->
+      <!-- <div class="swiper-scrollbar"></div> -->
+  
+      <!-- buttons -->
+      <div class="swiper-button-prev">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="4" fill="#2948BF"></rect>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7071 13.2929C17.3166 12.9024 16.6834 12.9024 16.2929 13.2929L10.2929 19.2929C9.9024 19.6834 9.9024 20.3166 10.2929 20.7071L16.2929 26.7071C16.6834 27.0976 17.3166 27.0976 17.7071 26.7071C18.0976 26.3166 18.0976 25.6834 17.7071 25.2929L13.4142 21H29C29.5523 21 30 20.5523 30 20C30 19.4477 29.5523 19 29 19H13.4142L17.7071 14.7071C18.0976 14.3166 18.0976 13.6834 17.7071 13.2929Z" fill="white"></path>
+          </svg>
+      </div>
+      <div class="swiper-button-next"> 
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="4" fill="#2948BF"></rect>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M22.2929 26.7071C21.9024 26.3166 21.9024 25.6834 22.2929 25.2929L26.5858 21L11 21C10.4477 21 10 20.5523 10 20C10 19.4477 10.4477 19 11 19L26.5858 19L22.2929 14.7071C21.9024 14.3166 21.9024 13.6834 22.2929 13.2929C22.6834 12.9024 23.3166 12.9024 23.7071 13.2929L29.7071 19.2929C30.0976 19.6834 30.0976 20.3166 29.7071 20.7071L23.7071 26.7071C23.3166 27.0976 22.6834 27.0976 22.2929 26.7071Z" fill="white"></path>
+          </svg>
+      </div>
+    </div> 
+   {% endif %}
+</product-recommendations>
+    {% if section.settings.image_shape == 'arch' %}
+    {{ 'mask-arch.svg' | inline_asset_content }}
+  {%- endif -%}
+</div>
+// global js
