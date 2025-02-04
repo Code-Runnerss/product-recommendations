@@ -177,3 +177,97 @@ product-recommendations .swiper-wrapper img {
   {%- endif -%}
 </div>
 // global js
+class ProductRecommendations extends HTMLElement {
+  observer = undefined;
+
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    this.initializeRecommendations(this.dataset.productId);
+  }
+
+  initializeRecommendations(productId) {
+    this.observer?.unobserve(this);
+    this.observer = new IntersectionObserver(
+      (entries, observer) => {
+        if (!entries[0].isIntersecting) return;
+        observer.unobserve(this);
+        this.loadRecommendations(productId);
+      },
+      { rootMargin: '0px 0px 400px 0px' }
+    );
+    this.observer.observe(this);
+  }
+
+  loadRecommendations(productId) {
+    fetch(`${this.dataset.url}&product_id=${productId}&section_id=${this.dataset.sectionId}`)
+      .then((response) => response.text())
+      .then((text) => {
+        const html = document.createElement('div');
+        html.innerHTML = text;
+        const recommendations = html.querySelector('product-recommendations');
+
+        if (recommendations?.innerHTML.trim().length) {
+          this.innerHTML = recommendations.innerHTML;
+        }
+
+        if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
+          this.remove();
+        }
+
+        // Wait for at least 6 products before initializing Swiper
+        this.checkAndInitSwiper();
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  }
+
+  checkAndInitSwiper() {
+    const swiperContainer = this.querySelector('.swiper-container');
+    if (!swiperContainer) return;
+
+    const checkSwiperSlides = () => {
+      const slides = swiperContainer.querySelectorAll('.swiper-slide');
+      if (slides.length >= 6) {
+        this.initSwiper();
+      } else {
+        setTimeout(checkSwiperSlides, 300); // Check again after 300ms if not enough slides
+      }
+    };
+
+    checkSwiperSlides();
+  }
+
+  initSwiper() {
+    setTimeout(() => {
+      let elementss = document.getElementById("swiper-container");
+      elementss.classList.add("show");
+      new Swiper('product-recommendations .swiper-container', {
+        direction: 'horizontal',
+        loop: false,
+        spaceBetween: 16,
+        breakpoints: {
+          1920: { slidesPerView: 'auto' },
+          1440: { slidesPerView:5.2 },
+          992: { slidesPerView: 'auto' },
+          320: { slidesPerView: 2 }
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev'
+        },
+        scrollbar: {
+          el: '.swiper-scrollbar',
+          draggable: true
+        }
+      });
+      console.log('Swiper initialized');
+    }, 500); // Short delay to ensure proper rendering
+  }
+}
+
+customElements.define('product-recommendations', ProductRecommendations);
+
